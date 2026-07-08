@@ -9,6 +9,7 @@ import os
 import time
 import random
 import urllib3
+import tempfile
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -26,14 +27,10 @@ USER_AGENTS = [
 _search_cache = {}
 _cache_ttl = 300
 
-# Папка для кэша
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-CACHE_DIR = os.path.join(SCRIPT_DIR, "audio_cache")
-try:
-    os.makedirs(CACHE_DIR, exist_ok=True)
-except PermissionError:
-    CACHE_DIR = os.path.join(os.getcwd(), "audio_cache")
-    os.makedirs(CACHE_DIR, exist_ok=True)
+# Используем /tmp для кэша на Render
+CACHE_DIR = os.path.join(tempfile.gettempdir(), "audio_cache")
+os.makedirs(CACHE_DIR, exist_ok=True)
+print(f"Cache directory: {CACHE_DIR}")
 
 def get_session():
     session = requests.Session()
@@ -500,7 +497,7 @@ def health():
 
 if __name__ == '__main__':
     print("=" * 60)
-    print("  YouTube Music Proxy v6.0")
+    print("  YouTube Music Proxy v6.0 (Render)")
     print("  Direct audio proxying + file cache")
     print(f"  Cache dir: {CACHE_DIR}")
     print("=" * 60)
@@ -509,5 +506,8 @@ if __name__ == '__main__':
         print(f"yt-dlp: {result.stdout.strip()}")
     except:
         print("WARNING: yt-dlp not found!")
-    print("Starting on http://0.0.0.0:5000")
-    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
+    
+    # Render использует порт из переменной окружения PORT
+    port = int(os.environ.get('PORT', 5000))
+    print(f"Starting on port {port}")
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
