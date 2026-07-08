@@ -1,4 +1,4 @@
 #!/bin/bash
+echo "🚀 Устанавливаем зависимости..."
 pip install -r requirements.txt
-apt-get update
-apt-get install -y yt-dlp
+echo "✅ Готово!"
